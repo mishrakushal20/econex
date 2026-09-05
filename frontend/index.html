@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ECONEX — Economic Control Plane for Agentic Commerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F0E;
+    --surface:#121816;
+    --surface-alt:#171F1B;
+    --text:#E7EDE9;
+    --muted:#8A9C93;
+    --mint:#4FD1AE;
+    --red:#E2574C;
+    --amber:#F2B84B;
+    --hairline:#24302B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .wrap{max-width:1100px; margin:0 auto; padding:0 24px;}
+  header.hero{
+    border-bottom:1px solid var(--hairline);
+    padding:56px 0 40px;
+    background:radial-gradient(ellipse at top left, rgba(79,209,174,0.08), transparent 60%);
+  }
+  .eyebrow{
+    color:var(--mint); text-transform:uppercase; letter-spacing:0.14em;
+    font-size:12px; font-family:'IBM Plex Mono', monospace; margin-bottom:14px;
+  }
+  h1.thesis{font-size:42px; line-height:1.15; margin:0 0 8px; font-weight:700;}
+  h1.thesis .neq{color:var(--red);}
+  p.sub{color:var(--muted); font-size:16px; max-width:640px; margin:14px 0 0;}
+  section{padding:40px 0; border-bottom:1px solid var(--hairline);}
+  section h2{font-size:20px; margin:0 0 4px; font-weight:600;}
+  section .section-desc{color:var(--muted); font-size:13px; margin:0 0 22px;}
+  .panel{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:10px;
+    padding:22px;
+  }
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:820px){ .grid2{grid-template-columns:1fr;} }
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-family:'IBM Plex Mono', monospace;}
+  input{
+    width:100%; background:var(--surface-alt); border:1px solid var(--hairline); color:var(--text);
+    padding:10px 12px; border-radius:6px; font-family:'IBM Plex Mono', monospace; font-size:14px;
+    margin-bottom:14px;
+  }
+  input:focus{outline:none; border-color:var(--mint);}
+  button{
+    background:var(--mint); color:#06110D; border:none; padding:11px 18px; border-radius:6px;
+    font-weight:600; font-size:14px; cursor:pointer; font-family:'IBM Plex Sans', sans-serif;
+  }
+  button:hover{filter:brightness(1.08);}
+  button.secondary{background:transparent; color:var(--text); border:1px solid var(--hairline);}
+  .decision-header{
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  }
+  .decision-badge{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; padding:8px 16px; border-radius:999px;
+    font-size:14px; letter-spacing:0.04em;
+  }
+  .decision-badge.COUNTER{background:rgba(242,184,75,0.15); color:var(--amber); border:1px solid var(--amber);}
+  .decision-badge.ACCEPT{background:rgba(79,209,174,0.15); color:var(--mint); border:1px solid var(--mint);}
+  .decision-badge.REJECT{background:rgba(226,87,76,0.15); color:var(--red); border:1px solid var(--red);}
+  .decision-badge.ESCALATE{background:rgba(242,184,75,0.15); color:var(--amber); border:1px solid var(--amber);}
+  .big-price{font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:700;}
+
+  /* Signature element: the Counterfactual Ledger */
+  table.ledger{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:13px;}
+  table.ledger th{
+    text-align:left; color:var(--muted); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--hairline);
+    text-transform:uppercase; font-size:11px; letter-spacing:0.06em;
+  }
+  table.ledger td{padding:9px 10px; border-bottom:1px solid rgba(36,48,43,0.6);}
+  tr.blocked td{color:#5A6A62;}
+  tr.blocked td.reason{color:var(--red);}
+  tr.blocked td.price{text-decoration:line-through; text-decoration-color:var(--red);}
+  tr.selected{background:rgba(242,184,75,0.08);}
+  tr.selected td{color:var(--text); font-weight:600;}
+  .star{color:var(--amber);}
+  .tag-pass{color:var(--mint);}
+  .tag-block{color:var(--red);}
+
+  .flow{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:18px;}
+  .flow-step{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; padding:8px 14px; border-radius:999px;
+    border:1px solid var(--hairline); color:var(--muted);
+  }
+  .flow-step.active{border-color:var(--mint); color:var(--mint);}
+  .flow-arrow{color:var(--hairline);}
+
+  .audit-item{display:flex; gap:14px; padding:10px 0; border-bottom:1px solid rgba(36,48,43,0.5);}
+  .audit-item .stage{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--mint); width:170px; flex-shrink:0;
+    text-transform:uppercase; letter-spacing:0.05em;
+  }
+  .audit-item .payload{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);}
+
+  .bench-table{width:100%; border-collapse:collapse; font-size:13px; font-family:'IBM Plex Mono', monospace;}
+  .bench-table th{text-align:right; color:var(--muted); font-weight:500; padding:8px; font-size:11px; text-transform:uppercase;}
+  .bench-table th:first-child, .bench-table td:first-child{text-align:left;}
+  .bench-table td{text-align:right; padding:8px; border-top:1px solid var(--hairline);}
+  .bench-table tr.econex td{color:var(--mint); font-weight:600;}
+
+  .redteam-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px;}
+  .rt-card{
+    background:var(--surface-alt); border:1px solid var(--hairline); border-radius:8px; padding:14px;
+  }
+  .rt-card .rt-name{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text); margin-bottom:6px;}
+  .rt-card .rt-status{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;}
+  .rt-card .rt-status.blocked{color:var(--mint);}
+  .rt-card .rt-status.notblocked{color:var(--red);}
+  .rt-card .rt-detail{font-size:11px; color:var(--muted); margin-top:6px;}
+
+  .status-line{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--muted); margin-top:10px;}
+  .error{color:var(--red); font-family:'IBM Plex Mono',monospace; font-size:13px;}
+  footer{padding:32px 0; color:var(--muted); font-size:12px; text-align:center;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Economic Control Plane for Agentic Commerce</div>
+    <h1 class="thesis">AUTHORIZED <span class="neq">≠</span> OPTIMAL</h1>
+    <p class="sub">An AI agent may be capable of taking a growth action. That doesn't mean it's economically
+      worthwhile for the merchant. ECONEX sits between AI-generated commercial intent and financial execution —
+      the LLM proposes strategy, a deterministic core authorizes money.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section id="config-section">
+    <h2>Connection</h2>
+    <p class="section-desc">Point this dashboard at your running ECONEX API (default: local demo server).</p>
+    <div class="panel grid2">
+      <div>
+        <label>API base URL</label>
+        <input id="apiBase" value="http://127.0.0.1:8000" />
+      </div>
+      <div>
+        <label>Merchant API token</label>
+        <input id="apiToken" value="demo-merchant-token" />
+      </div>
+    </div>
+  </section>
+
+  <section id="buyer-section">
+    <h2>Buyer Negotiation</h2>
+    <p class="section-desc">Simulate a buyer message against the demo merchant's Wireless Earbuds X200 (doc Table 10 fixture).</p>
+    <div class="panel">
+      <div class="grid2">
+        <div>
+          <label>Buyer message</label>
+          <input id="buyerText" value="Can you do ₹6,800? That's really my budget." />
+          <label>Requested price (paise)</label>
+          <input id="reqPrice" value="680000" />
+        </div>
+        <div>
+          <label>Buyer budget (paise)</label>
+          <input id="buyerBudget" value="680000" />
+          <label>Quantity</label>
+          <input id="quantity" value="1" />
+        </div>
+      </div>
+      <button id="runBtn">Run negotiation</button>
+      <button id="benchBtn" class="secondary" style="margin-left:8px;">Run benchmark</button>
+      <button id="redteamBtn" class="secondary" style="margin-left:8px;">Run red-team suite</button>
+      <div id="statusLine" class="status-line"></div>
+    </div>
+  </section>
+
+  <section id="decision-section" style="display:none;">
+    <h2>Decision</h2>
+    <p class="section-desc">The buyer-safe offer. Private merchant economics never appear here.</p>
+    <div class="panel decision-header">
+      <div>
+        <div class="big-price" id="decisionPrice">—</div>
+        <div class="status-line" id="decisionMessage"></div>
+      </div>
+      <div id="decisionBadge" class="decision-badge">—</div>
+    </div>
+    <div class="flow" id="flowSteps"></div>
+  </section>
+
+  <section id="ledger-section" style="display:none;">
+    <h2>Counterfactual Ledger</h2>
+    <p class="section-desc">Every candidate the deterministic core actually generated and evaluated — not a debug dump.</p>
+    <div class="panel">
+      <table class="ledger">
+        <thead>
+          <tr><th>Candidate</th><th>Price</th><th>Discount</th><th>Cashback</th><th>Delivery</th><th>Policy</th><th>P(conv)</th><th>Contribution</th><th>EOV</th></tr>
+        </thead>
+        <tbody id="ledgerBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="audit-section" style="display:none;">
+    <h2>Audit Timeline</h2>
+    <p class="section-desc">Full provenance from buyer request to decision — reconstructable, immutable.</p>
+    <div class="panel" id="auditBody"></div>
+  </section>
+
+  <section id="benchmark-section" style="display:none;">
+    <h2>Benchmark</h2>
+    <p class="section-desc mono">SYNTHETIC / SEEDED / REPRODUCIBLE — seed 42.</p>
+    <div class="panel">
+      <table class="bench-table" id="benchTable"></table>
+    </div>
+  </section>
+
+  <section id="redteam-section" style="display:none;">
+    <h2>Red-Team Suite</h2>
+    <p class="section-desc">17 adversarial scenarios. The deterministic boundary must win every time.</p>
+    <div class="panel">
+      <div class="redteam-grid" id="redteamGrid"></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>ECONEX — prototype built for Razorpay AI Buildathon 2026. Conversion heuristic and benchmark data are synthetic.</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function apiBase(){ return $('apiBase').value.replace(/\/$/, ''); }
+function token(){ return $('apiToken').value; }
+
+async function callApi(path, method, body){
+  const res = await fetch(apiBase() + path, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token() ? {'Authorization': 'Bearer ' + token()} : {})
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+function fmtPaise(p){
+  if(p === null || p === undefined) return '—';
+  return '₹' + (p/100).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+$('runBtn').addEventListener('click', async () => {
+  $('statusLine').textContent = 'Running negotiation...';
+  $('statusLine').classList.remove('error');
+  try {
+    const payload = {
+      product_id: 'P-earbuds-x200',
+      buyer_text: $('buyerText').value,
+      buyer_budget_paise: parseInt($('buyerBudget').value, 10),
+      quantity: parseInt($('quantity').value, 10),
+      requested_price_paise: parseInt($('reqPrice').value, 10)
+    };
+    const result = await callApi('/buyer-intents', 'POST', payload);
+    $('statusLine').textContent = 'Session ' + result.session_id + ' — decision ' + result.decision_id;
+    renderDecision(result);
+    await renderLedgerFromAudit(result.session_id);
+    await renderAudit(result.session_id);
+  } catch (e) {
+    $('statusLine').textContent = 'Error: ' + e.message;
+    $('statusLine').classList.add('error');
+  }
+});
+
+$('benchBtn').addEventListener('click', async () => {
+  $('statusLine').textContent = 'Running benchmark (seed 42)...';
+  try {
+    const result = await callApi('/benchmark/run?n=300&seed=42', 'GET');
+    renderBenchmark(result);
+    $('statusLine').textContent = 'Benchmark complete.';
+  } catch (e) {
+    $('statusLine').textContent = 'Error: ' + e.message;
+  }
+});
+
+$('redteamBtn').addEventListener('click', async () => {
+  $('statusLine').textContent = 'Running red-team suite...';
+  try {
+    const result = await callApi('/redteam/run', 'GET');
+    renderRedTeam(result);
+    $('statusLine').textContent = result.all_blocked ? 'All scenarios blocked.' : 'WARNING: not all scenarios blocked.';
+  } catch (e) {
+    $('statusLine').textContent = 'Error: ' + e.message;
+  }
+});
+
+function renderDecision(result){
+  $('decision-section').style.display = 'block';
+  const badge = $('decisionBadge');
+  badge.textContent = result.action;
+  badge.className = 'decision-badge ' + result.action;
+  $('decisionPrice').textContent = result.offer ? fmtPaise(result.offer.final_price_paise) : '—';
+  $('decisionMessage').textContent = result.offer ? result.offer.message : 'No feasible offer.';
+
+  const steps = ['GENERATE','FILTER','SIMULATE','RANK','SELECT'];
+  $('flowSteps').innerHTML = steps.map((s,i) =>
+    `<span class="flow-step active">${s}</span>` + (i < steps.length-1 ? '<span class="flow-arrow">→</span>' : '')
+  ).join('');
+}
+
+async function renderLedgerFromAudit(sessionId){
+  $('ledger-section').style.display = 'block';
+  const result = await callApi('/sessions/' + sessionId + '/ledger', 'GET');
+  const rows = result.candidates.map(c => {
+    const blocked = !c.feasible;
+    return `
+    <tr class="${blocked ? 'blocked' : ''} ${c.selected ? 'selected' : ''}">
+      <td>${c.selected ? '<span class="star">★</span> ' : ''}${c.candidate_id}</td>
+      <td class="price">${fmtPaise(c.final_price_paise)}</td>
+      <td>${fmtPaise(c.discount_paise)}</td>
+      <td>${fmtPaise(c.cashback_paise)}</td>
+      <td>${c.delivery_option}</td>
+      <td class="${blocked ? 'reason tag-block' : 'tag-pass'}">${blocked ? 'BLOCKED — ' + c.first_violation : 'FEASIBLE'}</td>
+      <td>${c.p_conv !== null && c.p_conv !== undefined ? (c.p_conv*100).toFixed(1) + '%' : '—'}</td>
+      <td>${blocked ? '—' : fmtPaise(c.contribution_paise)}</td>
+      <td>${blocked ? '—' : (c.eov_paise !== null ? fmtPaise(Math.round(c.eov_paise)) : '—')}</td>
+    </tr>`;
+  }).join('');
+  $('ledgerBody').innerHTML = rows;
+}
+
+async function renderAudit(sessionId){
+  $('audit-section').style.display = 'block';
+  const result = await callApi('/audit/' + sessionId, 'GET');
+  $('auditBody').innerHTML = result.timeline.map(entry => `
+    <div class="audit-item">
+      <div class="stage">${entry.stage}</div>
+      <div class="payload">${JSON.stringify(entry.payload)}</div>
+    </div>
+  `).join('');
+}
+
+function renderBenchmark(result){
+  $('benchmark-section').style.display = 'block';
+  const rows = [result.baseline_a, result.baseline_b, result.baseline_c, result.econex];
+  const header = `<tr><th>Strategy</th><th>Conv. rate</th><th>Revenue</th><th>Contribution</th><th>Incentive spend</th><th>Contrib./₹ incentive</th><th>Policy violations</th></tr>`;
+  const body = rows.map(r => `
+    <tr class="${r.strategy === 'ECONEX' ? 'econex' : ''}">
+      <td>${r.strategy}</td>
+      <td>${(r.conversion_rate*100).toFixed(1)}%</td>
+      <td>${fmtPaise(r.revenue_paise)}</td>
+      <td>${fmtPaise(r.contribution_paise)}</td>
+      <td>${fmtPaise(r.incentive_spend_paise)}</td>
+      <td>${(r.contribution_per_incentive_rupee === null || r.contribution_per_incentive_rupee === undefined || !isFinite(r.contribution_per_incentive_rupee)) ? '∞' : r.contribution_per_incentive_rupee.toFixed(2)}</td>
+      <td>${r.policy_violations}</td>
+    </tr>
+  `).join('');
+  $('benchTable').innerHTML = header + body;
+}
+
+function renderRedTeam(result){
+  $('redteam-section').style.display = 'block';
+  $('redteamGrid').innerHTML = result.scenarios.map(s => `
+    <div class="rt-card">
+      <div class="rt-name">${s.name.replace(/_/g,' ')}</div>
+      <div class="rt-status ${s.blocked ? 'blocked' : 'notblocked'}">${s.blocked ? '✅ BLOCKED' : '❌ NOT BLOCKED'}</div>
+      <div class="rt-detail">${s.reason || ''}</div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
